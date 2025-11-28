@@ -1,6 +1,6 @@
 {
-  "name": "Sobriety Tracker",
-  "short_name": "Sobriety",
+  "name": "Consumption Tracker",
+  "short_name": "Consumption",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f4f4f6",

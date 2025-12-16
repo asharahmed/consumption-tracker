@@ -364,6 +364,7 @@ async function syncFromCloud(user) {
     updateStatusForDate(dateInput.value);
     buildHistoryList();
     renderCalendar();
+    renderTrendsChart();
   }
 }
 
@@ -508,6 +509,7 @@ goalInput.addEventListener("change", async () => {
   updateStatusForDate(dateInput.value);
   buildHistoryList();
   renderCalendar();
+  renderTrendsChart();
   await saveRemoteState();
 });
 
@@ -545,6 +547,7 @@ saveBtn.addEventListener("click", async () => {
   calendarYear = d.getFullYear();
   calendarMonthIndex = d.getMonth();
   renderCalendar();
+  renderTrendsChart();
 
   await saveRemoteState();
 });
@@ -553,6 +556,7 @@ saveBtn.addEventListener("click", async () => {
 updateStatusForDate(dateInput.value);
 buildHistoryList();
 renderCalendar();
+renderTrendsChart();
 updateAuthUI();
 
 // PWA service worker
@@ -563,3 +567,151 @@ if ("serviceWorker" in navigator) {
       .catch(err => console.error("Service worker registration failed:", err));
   });
 }
+
+// ---- Trends Chart ----
+
+let trendsChart = null;
+
+function renderTrendsChart() {
+  const ctx = document.getElementById("trends-chart").getContext("2d");
+  const goal = Number(state.goal) || 0;
+  
+  // 1. Calculate last 14 days
+  const labels = [];
+  const dataPoints = [];
+  const bgColors = [];
+  const borderColors = [];
+
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    
+    // Format YYYY-MM-DD manually to avoid timezone weirdness
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const isoDate = `${year}-${month}-${day}`;
+    
+    // Short label for X axis (e.g. "15", "16")
+    labels.push(day); // just the day number
+    
+    const value = state.entries[isoDate];
+    // if undefined, we can push null or 0. Let's push 0 for visual continuity in a bar chart, 
+    // but maybe distinquish "0 drinks" from "no data"? 
+    // For simplicity, if no data, let's treat as 0 but maybe style it? 
+    // Actually, let's just show what is there.
+    
+    let renderVal = 0;
+    if (value !== undefined) {
+      renderVal = value;
+    }
+    
+    dataPoints.push(renderVal);
+    
+    // Color logic
+    if (value === undefined) {
+      // No data -> greyish
+      bgColors.push("rgba(148, 163, 184, 0.2)");
+      borderColors.push("rgba(148, 163, 184, 0.4)");
+    } else {
+      const diff = value - goal;
+      if (goal === 0 && value === 0) {
+        // perfect (green)
+        bgColors.push("rgba(34, 197, 94, 0.3)");
+        borderColors.push("rgba(34, 197, 94, 0.8)");
+      } else if (goal === 0 && value > 0) {
+        // over (red)
+        bgColors.push("rgba(239, 68, 68, 0.3)");
+        borderColors.push("rgba(239, 68, 68, 0.8)");
+      } else if (diff < 0) {
+        // under (green)
+        bgColors.push("rgba(34, 197, 94, 0.3)");
+        borderColors.push("rgba(34, 197, 94, 0.8)");
+      } else if (diff === 0) {
+        // equal (yellow)
+        bgColors.push("rgba(234, 179, 8, 0.3)");
+        borderColors.push("rgba(234, 179, 8, 0.8)");
+      } else {
+        // over (red)
+        bgColors.push("rgba(239, 68, 68, 0.3)");
+        borderColors.push("rgba(239, 68, 68, 0.8)");
+      }
+    }
+  }
+
+  if (trendsChart) {
+    trendsChart.data.labels = labels;
+    trendsChart.data.datasets[0].data = dataPoints;
+    trendsChart.data.datasets[0].backgroundColor = bgColors;
+    trendsChart.data.datasets[0].borderColor = borderColors;
+    trendsChart.update();
+  } else {
+    Chart.defaults.color = "#9ca3af";
+    Chart.defaults.font.family = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    
+    trendsChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Drinks",
+            data: dataPoints,
+            backgroundColor: bgColors,
+            borderColor: borderColors,
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+            titleColor: '#e5e7eb',
+            bodyColor: '#e5e7eb',
+            borderColor: 'rgba(148, 163, 184, 0.2)',
+            borderWidth: 1,
+            callbacks: {
+                label: function(context) {
+                    if (context.parsed.y === 0 && !state.entries[isoOf(today.getFullYear(), today.getMonth(), Number(context.label))]) {
+                        // This logic is tricky because we just have 'day' as label. 
+                        // Simplified: just show value.
+                    }
+                    return context.parsed.y + " drinks";
+                }
+            }
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(148, 163, 184, 0.1)",
+            },
+            ticks: {
+              stepSize: 1
+            }
+          },
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+        },
+        animation: {
+            duration: 400
+        }
+      },
+    });
+  }
+}
+

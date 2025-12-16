@@ -20,6 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
@@ -35,6 +36,7 @@
             --danger: #f97373;
             --success: #34d399;
             --warning: #facc15;
+            --chart-grid: rgba(148, 163, 184, 0.1);
         }
 
         * {
@@ -826,7 +828,7 @@
 
                     <label for="goal-input">Daily limit</label>
                     <input type="number" id="goal-input" min="0" step="1" placeholder="e.g. 0, 1, 2..." />
-                    
+
                 </div>
 
                 <div class="card" style="margin-top: 14px;">
@@ -871,6 +873,18 @@
 
             <!-- Right column: calendar + history -->
             <section>
+                <div class="card" style="margin-bottom: 14px;">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Trends</div>
+                            <div class="card-subtitle">Last 14 days</div>
+                        </div>
+                    </div>
+                    <div style="position: relative; height: 160px; width: 100%;">
+                        <canvas id="trends-chart"></canvas>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div class="card-header">
                         <div>

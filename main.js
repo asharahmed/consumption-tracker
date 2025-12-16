@@ -231,7 +231,7 @@ function renderCalendar() {
 
   const prevBtn = document.createElement("button");
   prevBtn.className = "calendar-nav-btn";
-  prevBtn.textContent = "‹";
+  prevBtn.innerHTML = '<span class="material-symbols-rounded">chevron_left</span>';
   prevBtn.addEventListener("click", () => changeMonth(-1));
 
   const label = document.createElement("div");
@@ -240,7 +240,7 @@ function renderCalendar() {
 
   const nextBtn = document.createElement("button");
   nextBtn.className = "calendar-nav-btn";
-  nextBtn.textContent = "›";
+  nextBtn.innerHTML = '<span class="material-symbols-rounded">chevron_right</span>';
   nextBtn.addEventListener("click", () => changeMonth(1));
 
   header.appendChild(prevBtn);
@@ -571,6 +571,7 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+
 // ---- Trends Chart ----
 
 let trendsChart = null;
@@ -601,10 +602,6 @@ function renderTrendsChart() {
     labels.push(day); // just the day number
 
     const value = state.entries[isoDate];
-    // if undefined, we can push null or 0. Let's push 0 for visual continuity in a bar chart, 
-    // but maybe distinquish "0 drinks" from "no data"? 
-    // For simplicity, if no data, let's treat as 0 but maybe style it? 
-    // Actually, let's just show what is there.
 
     let renderVal = 0;
     if (value !== undefined) {
@@ -613,32 +610,27 @@ function renderTrendsChart() {
 
     dataPoints.push(renderVal);
 
-    // Color logic
+    // Color logic matching CSS variables
+    // Success: #81c995, Warning: #fdd663, Danger: #f28b82
     if (value === undefined) {
-      // No data -> greyish
-      bgColors.push("#3c4043"); // chart grid color / dark grey
-      borderColors.push("#5f6368");
+      bgColors.push("rgba(147, 143, 153, 0.2)"); // Outline variant like color
+      borderColors.push("#938F99");
     } else {
       const diff = value - goal;
       if (goal === 0 && value === 0) {
-        // perfect (green)
-        bgColors.push("rgba(129, 201, 149, 0.5)"); // #81c995
+        bgColors.push("rgba(129, 201, 149, 0.7)");
         borderColors.push("#81c995");
       } else if (goal === 0 && value > 0) {
-        // over (red)
-        bgColors.push("rgba(242, 139, 130, 0.5)"); // #f28b82
+        bgColors.push("rgba(242, 139, 130, 0.7)");
         borderColors.push("#f28b82");
       } else if (diff < 0) {
-        // under (green)
-        bgColors.push("rgba(129, 201, 149, 0.5)");
+        bgColors.push("rgba(129, 201, 149, 0.7)");
         borderColors.push("#81c995");
       } else if (diff === 0) {
-        // equal (yellow)
-        bgColors.push("rgba(253, 214, 99, 0.5)"); // #fdd663
+        bgColors.push("rgba(253, 214, 99, 0.7)");
         borderColors.push("#fdd663");
       } else {
-        // over (red)
-        bgColors.push("rgba(242, 139, 130, 0.5)");
+        bgColors.push("rgba(242, 139, 130, 0.7)");
         borderColors.push("#f28b82");
       }
     }
@@ -651,8 +643,8 @@ function renderTrendsChart() {
     trendsChart.data.datasets[0].borderColor = borderColors;
     trendsChart.update();
   } else {
-    Chart.defaults.color = "#9ca3af";
-    Chart.defaults.font.family = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    Chart.defaults.color = "#CAC4D0"; // Text muted
+    Chart.defaults.font.family = "'Google Sans', 'Roboto', sans-serif";
 
     trendsChart = new Chart(ctx, {
       type: "bar",
@@ -680,17 +672,15 @@ function renderTrendsChart() {
           tooltip: {
             mode: 'index',
             intersect: false,
-            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-            titleColor: '#e5e7eb',
-            bodyColor: '#e5e7eb',
-            borderColor: 'rgba(148, 163, 184, 0.2)',
+            backgroundColor: '#2B2930',
+            titleColor: '#E6E1E5',
+            bodyColor: '#E6E1E5',
+            borderColor: '#49454F',
             borderWidth: 1,
+            padding: 10,
+            cornerRadius: 8,
             callbacks: {
               label: function (context) {
-                if (context.parsed.y === 0 && !state.entries[isoOf(today.getFullYear(), today.getMonth(), Number(context.label))]) {
-                  // This logic is tricky because we just have 'day' as label. 
-                  // Simplified: just show value.
-                }
                 return context.parsed.y + " drinks";
               }
             }
@@ -700,7 +690,8 @@ function renderTrendsChart() {
           y: {
             beginAtZero: true,
             grid: {
-              color: "rgba(148, 163, 184, 0.1)",
+              color: "#49454F", // Outline variant
+              drawBorder: false,
             },
             ticks: {
               stepSize: 1
@@ -713,10 +704,59 @@ function renderTrendsChart() {
           },
         },
         animation: {
-          duration: 400
+          duration: 600,
+          easing: 'easeOutQuart'
         }
       },
     });
   }
 }
+
+// ---- Ripple Effect ----
+
+function createRipple(event) {
+  const button = event.currentTarget;
+  const circle = document.createElement("span");
+  const diameter = Math.max(button.clientWidth, button.clientHeight);
+  const radius = diameter / 2;
+
+  const rect = button.getBoundingClientRect();
+
+  circle.style.width = circle.style.height = `${diameter}px`;
+  circle.style.left = `${event.clientX - rect.left - radius}px`;
+  circle.style.top = `${event.clientY - rect.top - radius}px`;
+  circle.classList.add("ripple-surface");
+
+  // Remove ripple after animation
+  const ripple = button.getElementsByClassName("ripple-surface")[0];
+  if (ripple) {
+    ripple.remove();
+  }
+
+  button.appendChild(circle);
+}
+
+// Add ripple to buttons
+function attachRipple() {
+  const buttons = document.querySelectorAll("button, .day-circle, .history-item");
+  buttons.forEach(btn => {
+    btn.removeEventListener("click", createRipple); // avoid duplicates if called multiple times
+    btn.addEventListener("click", createRipple);
+  });
+}
+
+// Attach on load and observing mutations for dynamic content
+document.addEventListener("DOMContentLoaded", () => {
+  attachRipple();
+
+  // Observer for dynamic content (calendar, history)
+  const observer = new MutationObserver((mutations) => {
+    attachRipple();
+  });
+
+  const config = { childList: true, subtree: true };
+  if (document.getElementById("calendar")) observer.observe(document.getElementById("calendar"), config);
+  if (document.getElementById("history-list")) observer.observe(document.getElementById("history-list"), config);
+});
+
 

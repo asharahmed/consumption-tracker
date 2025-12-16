@@ -616,30 +616,30 @@ function renderTrendsChart() {
     // Color logic
     if (value === undefined) {
       // No data -> greyish
-      bgColors.push("rgba(148, 163, 184, 0.2)");
-      borderColors.push("rgba(148, 163, 184, 0.4)");
+      bgColors.push("#3c4043"); // chart grid color / dark grey
+      borderColors.push("#5f6368");
     } else {
       const diff = value - goal;
       if (goal === 0 && value === 0) {
         // perfect (green)
-        bgColors.push("rgba(34, 197, 94, 0.3)");
-        borderColors.push("rgba(34, 197, 94, 0.8)");
+        bgColors.push("rgba(129, 201, 149, 0.5)"); // #81c995
+        borderColors.push("#81c995");
       } else if (goal === 0 && value > 0) {
         // over (red)
-        bgColors.push("rgba(239, 68, 68, 0.3)");
-        borderColors.push("rgba(239, 68, 68, 0.8)");
+        bgColors.push("rgba(242, 139, 130, 0.5)"); // #f28b82
+        borderColors.push("#f28b82");
       } else if (diff < 0) {
         // under (green)
-        bgColors.push("rgba(34, 197, 94, 0.3)");
-        borderColors.push("rgba(34, 197, 94, 0.8)");
+        bgColors.push("rgba(129, 201, 149, 0.5)");
+        borderColors.push("#81c995");
       } else if (diff === 0) {
         // equal (yellow)
-        bgColors.push("rgba(234, 179, 8, 0.3)");
-        borderColors.push("rgba(234, 179, 8, 0.8)");
+        bgColors.push("rgba(253, 214, 99, 0.5)"); // #fdd663
+        borderColors.push("#fdd663");
       } else {
         // over (red)
-        bgColors.push("rgba(239, 68, 68, 0.3)");
-        borderColors.push("rgba(239, 68, 68, 0.8)");
+        bgColors.push("rgba(242, 139, 130, 0.5)");
+        borderColors.push("#f28b82");
       }
     }
   }

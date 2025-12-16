@@ -128,6 +128,202 @@ function updateStatusForDate(dateStr) {
       `You had ${drinks} drink(s) on ${dateStr}. Your goal is ${goal}, so you're over by ${diff}.`
     );
   }
+
+  updateStreakUI();
+}
+
+function calculateStreak() {
+  const goal = Number(state.goal) || 0;
+  let streak = 0;
+
+  // Start from today; if today has no data, check yesterday (grace period)
+  // If today HAS data and is > goal, streak is 0.
+  // If today HAS data and is <= goal, streak starts at 1, check backward.
+
+  const t = new Date();
+  const todayStr = isoOf(t.getFullYear(), t.getMonth(), t.getDate());
+
+  // Check today
+  const todayVal = state.entries[todayStr];
+  let checkDate = new Date();
+
+  if (todayVal !== undefined) {
+    if (todayVal > goal) return 0; // broken today
+    streak++;
+    checkDate.setDate(checkDate.getDate() - 1); // move to yesterday
+  } else {
+    // today empty, check yesterday. If yesterday broken/empty, streak 0.
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  // Loop backwards
+  for (let i = 0; i < 365; i++) { // max lookback 1 year
+    const y = checkDate.getFullYear();
+    const m = checkDate.getMonth(); // 0-based
+    const d = checkDate.getDate();
+    const iso = isoOf(y, m, d);
+    const val = state.entries[iso];
+
+    if (val !== undefined && val <= goal) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break; // streak broken or no data
+    }
+  }
+  return streak;
+}
+
+function calculateZeroStreak(endDateStr) {
+  let streak = 0;
+  let checkDate = new Date(endDateStr);
+  // Correct timezone issue: Date(string) is UTC-based usually, but here we just want YMD navigation.
+  // Better to parse the YMD manually or stick to the existing date parts if endDateStr is YYYY-MM-DD.
+  // Actually, new Date("2025-12-15") is treated as UTC in some browsers, but "2025-12-15T00:00:00" is local.
+  // To be safe and consistent with existing code, let's parse:
+  const parts = endDateStr.split('-');
+  checkDate = new Date(parts[0], parts[1] - 1, parts[2]);
+
+  for (let i = 0; i < 365; i++) {
+    const y = checkDate.getFullYear();
+    const m = checkDate.getMonth();
+    const d = checkDate.getDate();
+    const iso = isoOf(y, m, d);
+    const val = state.entries[iso];
+
+    if (val === 0) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function updateStreakUI() {
+  const el = document.getElementById('streak-display');
+  if (!el) return;
+  const streak = calculateStreak();
+  el.innerHTML = `<span class="material-symbols-rounded" style="color:#facc15;">local_fire_department</span> ${streak} day streak`;
+
+  // Optional: Hide if 0
+  if (streak === 0) {
+    el.style.opacity = '0.5';
+    el.style.filter = 'grayscale(1)';
+  } else {
+    el.style.opacity = '1';
+    el.style.filter = 'none';
+    // Add glow
+    el.style.textShadow = '0 0 10px rgba(250, 204, 21, 0.5)';
+  }
+}
+
+function exportData() {
+  const rows = [["Date", "Drinks", "Goal (At Time of Export)"]];
+  const goal = state.goal || 0;
+
+  Object.keys(state.entries).sort().forEach(date => {
+    rows.push([date, state.entries[date], goal]);
+  });
+
+  let csvContent = "data:text/csv;charset=utf-8,"
+    + rows.map(e => e.join(",")).join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `consumption_history_${todayISO()}.csv`);
+  document.body.appendChild(link); // Required for FF
+  link.click();
+  document.body.removeChild(link);
+}
+
+
+
+
+
+function updateBadges() {
+  // Current zero streak from today
+  // Logic: calculate streak ending today. If count > 0 today, streak is 0. 
+  // Except we usually allow today to be "pending".
+  // Let's use the calculateStreak logic but specifically for zeros.
+
+  // We want the HIGHEST milestone achieved based on current streak.
+  const t = new Date();
+  const todayStr = isoOf(t.getFullYear(), t.getMonth(), t.getDate());
+  const streak = calculateZeroStreak(todayStr); // This calculates strictly back from date
+
+  // Check milestones
+  const milestones = [1, 3, 7, 14, 30];
+  milestones.forEach(m => {
+    const el = document.getElementById(`badge-${m}`);
+    if (el) {
+      if (streak >= m) {
+        el.classList.add('unlocked');
+      } else {
+        el.classList.remove('unlocked');
+      }
+    }
+  });
+}
+
+const QUOTES = [
+  { text: "The journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
+  { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+  { text: "Everything you need is already inside you.", author: "Unknown" },
+  { text: "Small steps every day add up to big results.", author: "Unknown" },
+  { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+  { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+  { text: "Success is the sum of small efforts, repeated day in and day out.", author: "Robert Collier" },
+  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+  { text: "Your future is created by what you do today, not tomorrow.", author: "Unknown" },
+  { text: "It always seems impossible until it's done.", author: "Nelson Mandela" }
+];
+
+function renderQuote() {
+  const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  const tEl = document.getElementById('quote-text');
+  const aEl = document.getElementById('quote-author');
+  if (tEl) tEl.innerText = `"${q.text}"`;
+  if (aEl) aEl.innerText = `- ${q.author}`;
+}
+
+function calculateWeeklyStats() {
+  // Last 7 days total & avg
+  const today = new Date();
+  let total = 0;
+  let daysWithData = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(today.getDate() - i);
+    const iso = isoOf(d.getFullYear(), d.getMonth(), d.getDate());
+    const val = state.entries[iso];
+    if (val !== undefined) {
+      total += val;
+      daysWithData++;
+    }
+  }
+
+  const avg = daysWithData > 0 ? (total / daysWithData).toFixed(1) : "0.0";
+
+  const totalEl = document.getElementById('weekly-total');
+  const avgEl = document.getElementById('weekly-avg');
+
+  if (totalEl) totalEl.innerText = total;
+  if (avgEl) avgEl.innerText = avg;
+}
+
+function fireConfetti() {
+  // Canvas-confetti library call
+  confetti({
+    particleCount: 150,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#4ade80', '#facc15', '#60a5fa', '#f472b6', '#D0BCFF'],
+    disableForReducedMotion: true
+  });
 }
 
 function buildHistoryList() {
@@ -540,6 +736,17 @@ saveBtn.addEventListener("click", async () => {
 
   state.entries[date] = drinks;
   saveLocalState(state);
+
+  // Confetti Logic: Zero-use milestones
+  if (drinks === 0) {
+    const zStreak = calculateZeroStreak(date);
+    const milestones = [1, 3, 7, 14, 21, 30, 60, 90, 100, 365];
+    // Fire if we hit a milestone
+    if (milestones.includes(zStreak)) {
+      fireConfetti();
+    }
+  }
+
   updateStatusForDate(date);
   buildHistoryList();
 
@@ -560,6 +767,32 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCalendar();
   renderTrendsChart();
   updateAuthUI();
+  updateStreakUI();
+  renderTrendsChart();
+  updateAuthUI();
+  updateStreakUI();
+  calculateWeeklyStats();
+  updateBadges();
+  renderQuote();
+
+  // Bind export button if exists (dynamic binding)
+  const exportBtn = document.getElementById('export-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      exportData();
+    });
+  }
+
+  // Quick Add
+  const quickAddBtn = document.getElementById('quick-add-btn');
+  const countInput = document.getElementById('drinks-input');
+  if (quickAddBtn && countInput) {
+    quickAddBtn.addEventListener('click', () => {
+      const current = parseInt(countInput.value) || 0;
+      countInput.value = current + 1;
+    });
+  }
 });
 
 // PWA service worker

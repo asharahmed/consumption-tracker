@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Privacy Policy - Consumption Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f172a" />
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <!-- Google Fonts & Icons -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            /* Glass Material Dark Theme Tokens */
+            --bg-color: #0f172a;
+
+            /* Glass Surface */
+            --glass-surface: rgba(30, 41, 59, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: 24px;
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+
+            --md-sys-color-primary: #D0BCFF;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+
+            --font-family: 'Google Sans', 'Roboto', sans-serif;
+            --shape-corner-large: 28px;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0px, 0px) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+
+            100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+        }
+
+        @keyframes float2 {
+            0% {
+                transform: translate(0px, 0px) scale(1);
+            }
+
+            33% {
+                transform: translate(-30px, 50px) scale(1.2);
+            }
+
+            66% {
+                transform: translate(30px, -20px) scale(0.8);
+            }
+
+            100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: var(--font-family);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Mesh/Blobs */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            background: radial-gradient(at top left, #1e1b4b, #0f172a);
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+
+        .blob:nth-child(1) {
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: #4c1d95;
+            animation-duration: 25s;
+        }
+
+        .blob:nth-child(2) {
+            bottom: -10%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: #312e81;
+            animation-name: float2;
+            animation-duration: 30s;
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            z-index: 1;
+        }
+
+        .card {
+            background: var(--glass-surface);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: var(--shape-corner-large);
+            padding: 40px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 2rem;
+            font-weight: 500;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            margin-top: 24px;
+            color: #EADDFF;
+            font-weight: 500;
+        }
+
+        p {
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        a {
+            color: var(--md-sys-color-primary);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .material-symbols-rounded {
+            font-size: 20px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-bg">
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+
+    <div class="shell">
+        <a href="index.html" class="back-link">
+            <span class="material-symbols-rounded">arrow_back</span> Back to App
+        </a>
+
+        <div class="card">
+            <h1>Privacy Policy</h1>
+            <p>Last updated: December 15, 2025</p>
+
+            <h2>1. Your Data is Yours</h2>
+            <p>Consumption Tracker is designed with a "local-first" philosophy. By default, all data you enter (daily
+                limits, drink counts, dates) is stored locally on your device using <code>localStorage</code>. This data
+                never leaves your browser unless you explicitly choose to sign in.</p>
+
+            <h2>2. Cloud Sync (Optional)</h2>
+            <p>If you choose to create an account and sign in, your data will be synchronized with Google Firebase. This
+                allows you to access your history across multiple devices. We do not sell your data or use it for
+                advertising purposes.</p>
+
+            <h2>3. No Tracking</h2>
+            <p>We do not use third-party analytics cookies or tracking pixels. The application is designed to be a
+                private tool for personal self-improvement.</p>
+
+            <h2>4. Deletion</h2>
+            <p>You can clear your local data at any time by clearing your browser cache. If you have a cloud account and
+                wish to have your data permanently deleted, please contact us.</p>
+        </div>
+    </div>
+</body>
+
+</html>

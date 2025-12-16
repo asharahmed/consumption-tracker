@@ -1,0 +1,117 @@
+:root {
+    /* Glass Material Dark Theme Tokens */
+    --bg-color: #0f172a;
+
+    /* Glass Surface */
+    --glass-surface: rgba(30, 41, 59, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: 24px;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+
+    --md-sys-color-primary: #D0BCFF;
+    --md-sys-color-on-primary: #381E72;
+
+    --md-sys-color-surface-container-high: rgba(0, 0, 0, 0.2);
+
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+
+    /* Functional Colors mapped to tracking */
+    --color-success: #4ade80;
+    --color-warning: #facc15;
+    --color-danger: #f87171;
+
+    --font-family: 'Google Sans', 'Roboto', sans-serif;
+
+    --shape-corner-large: 28px;
+    --shape-corner-full: 999px;
+    --shape-corner-small: 12px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
+@keyframes float2 {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+        transform: translate(-30px, 50px) scale(1.2);
+    }
+
+    66% {
+        transform: translate(30px, -20px) scale(0.8);
+    }
+
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
+* {
+    box-sizing: border-box;
+    font-family: var(--font-family);
+    -webkit-tap-highlight-color: transparent;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    /* Global box sizing reset */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    /* Use client width (excluding scrollbar) for correct visual center */
+}
+
+/* Material Icons Utility */
+.material-symbols-rounded {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-size: 20px;
+    vertical-align: middle;
+    user-select: none;
+}
+
+.material-symbols-rounded.filled {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

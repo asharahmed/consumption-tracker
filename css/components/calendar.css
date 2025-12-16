@@ -1,0 +1,165 @@
+/* Calendar */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding: 0 8px;
+}
+
+.calendar-month-label {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.calendar-nav-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.calendar-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.calendar-grid {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.calendar-weekday {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding-bottom: 8px;
+}
+
+.calendar-day {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 44px;
+}
+
+.day-circle {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.85rem;
+    border-radius: 12px;
+    /* squircle for modern feel */
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid transparent;
+    color: #cbd5e1;
+}
+
+.day-circle.today {
+    border: 1px solid #D0BCFF;
+    box-shadow: 0 0 12px rgba(208, 188, 255, 0.3);
+}
+
+.day-circle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    z-index: 2;
+}
+
+/* Status Colors for Day Circle */
+.day-circle.under {
+    color: #000;
+    background: #69f0ae;
+    box-shadow: 0 4px 12px rgba(105, 240, 174, 0.4);
+    border-color: transparent;
+}
+
+.day-circle.equal {
+    color: #000;
+    background: #ffe57f;
+    box-shadow: 0 4px 12px rgba(255, 229, 127, 0.4);
+    border-color: transparent;
+}
+
+.day-circle.over {
+    color: #fff;
+    background: #ff5252;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+    border-color: transparent;
+}
+
+.day-circle.no-data {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.calendar-legend {
+    margin-top: 24px;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.calendar-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-dot.under {
+    background: var(--color-success);
+}
+
+.legend-dot.equal {
+    background: var(--color-warning);
+}
+
+.legend-dot.over {
+    background: var(--color-danger);
+}
+
+.legend-dot.no-data {
+    background: var(--md-sys-color-outline);
+}
+
+/* Mobile Compact Calendar */
+@media (max-width: 480px) {
+    .calendar-grid {
+        gap: 2px;
+    }
+
+    .day-circle {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+        border-radius: 8px;
+    }
+}

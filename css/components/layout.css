@@ -1,0 +1,160 @@
+/* Layout & Structure */
+.shell {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    /* Explicit centering */
+    padding: 24px 16px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* Equal columns for symmetry */
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+}
+
+section {
+    min-width: 0;
+    /* Allow flex/grid items to shrink below content size */
+    max-width: 100%;
+}
+
+canvas {
+    max-width: 100%;
+}
+
+/* Ambient Background */
+.ambient-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+    background: radial-gradient(at top center, #1e1b4b, #0f172a);
+}
+
+.blob {
+    position: absolute;
+    background-blend-mode: color-dodge;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+    animation: float 20s infinite ease-in-out alternate;
+}
+
+.blob:nth-child(1) {
+    top: -10%;
+    left: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: #7c3aed;
+    animation-delay: 0s;
+}
+
+.blob:nth-child(2) {
+    top: -10%;
+    right: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: #2563eb;
+    animation-delay: -5s;
+}
+
+.blob:nth-child(3) {
+    top: 40%;
+    left: 40%;
+    width: 40vw;
+    height: 40vw;
+    background: #be185d;
+    opacity: 0.3;
+    animation-duration: 28s;
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #D0BCFF;
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.brand-text-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-text-main {
+    font-size: 1.375rem;
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.brand-text-sub {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+    display: none;
+}
+
+@media (min-width: 600px) {
+    .brand-text-sub {
+        display: block;
+    }
+}
+
+/* Responsive Layout */
+@media (max-width: 1024px) {
+    .layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-text-sub {
+        display: none;
+    }
+
+    .app-header {
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .brand {
+        width: 100%;
+    }
+}

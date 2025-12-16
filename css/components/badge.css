@@ -1,0 +1,53 @@
+/* Achievements / Badges */
+.badge-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.3;
+    filter: grayscale(1);
+    transition: all 0.4s ease;
+}
+
+.badge.unlocked {
+    opacity: 1;
+    filter: grayscale(0);
+    transform: scale(1.1);
+}
+
+.badge-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+    color: #facc15;
+    text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+}
+
+.badge-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.badge.unlocked .badge-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

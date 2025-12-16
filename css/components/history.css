@@ -1,0 +1,65 @@
+/* History List */
+.history-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    max-height: 300px;
+    overflow-y: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-item {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    /* softer glass border */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+}
+
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-date {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.history-drinks {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.pill {
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.pill.under {
+    background: rgba(129, 201, 149, 0.2);
+    color: #81c995;
+}
+
+.pill.equal {
+    background: rgba(253, 214, 99, 0.2);
+    color: #fdd663;
+}
+
+.pill.over {
+    background: rgba(242, 139, 130, 0.2);
+    color: #f28b82;
+}

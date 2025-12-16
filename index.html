@@ -31,1044 +31,9 @@
         href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap"
         rel="stylesheet">
 
-    <style>
-        :root {
-            /* Glass Material Dark Theme Tokens */
-            --bg-color: #0f172a;
-
-            /* Glass Surface */
-            --glass-surface: rgba(30, 41, 59, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-blur: 24px;
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
-
-            --md-sys-color-primary: #D0BCFF;
-            --md-sys-color-on-primary: #381E72;
-
-            --md-sys-color-surface-container-high: rgba(0, 0, 0, 0.2);
-
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-
-            /* Functional Colors mapped to tracking */
-            --color-success: #4ade80;
-            --color-warning: #facc15;
-            --color-danger: #f87171;
-
-            --font-family: 'Google Sans', 'Roboto', sans-serif;
-
-            --shape-corner-large: 28px;
-            --shape-corner-full: 999px;
-            --shape-corner-small: 12px;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes float {
-            0% {
-                transform: translate(0px, 0px) scale(1);
-            }
-
-            33% {
-                transform: translate(30px, -50px) scale(1.1);
-            }
-
-            66% {
-                transform: translate(-20px, 20px) scale(0.9);
-            }
-
-            100% {
-                transform: translate(0px, 0px) scale(1);
-            }
-        }
-
-        @keyframes float2 {
-            0% {
-                transform: translate(0px, 0px) scale(1);
-            }
-
-            33% {
-                transform: translate(-30px, 50px) scale(1.2);
-            }
-
-            66% {
-                transform: translate(30px, -20px) scale(0.8);
-            }
-
-            100% {
-                transform: translate(0px, 0px) scale(1);
-            }
-        }
-
-        * {
-            box-sizing: border-box;
-            font-family: var(--font-family);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            /* Global box sizing reset */
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow-x: hidden;
-            position: relative;
-            width: 100%;
-            /* Use client width (excluding scrollbar) for correct visual center */
-        }
-
-        /* Ambient Background Mesh/Blobs */
-        .ambient-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            /* Match content width (100% vs 100vw) to fix scrollbar center offset */
-            height: 100vh;
-            z-index: -1;
-            overflow: hidden;
-            background: radial-gradient(at top center, #1e1b4b, #0f172a);
-            /* Centered gradient */
-        }
-
-        .blob {
-            position: absolute;
-            background-blend-mode: color-dodge;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.6;
-            animation: float 20s infinite ease-in-out alternate;
-        }
-
-        .blob:nth-child(1) {
-            top: -10%;
-            left: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: #7c3aed;
-            animation-delay: 0s;
-        }
-
-        .blob:nth-child(2) {
-            top: -10%;
-            right: -10%;
-            /* Symmetric right placement */
-            width: 50vw;
-            height: 50vw;
-            background: #2563eb;
-            animation-delay: -5s;
-        }
-
-        .blob:nth-child(3) {
-            top: 40%;
-            left: 40%;
-            width: 40vw;
-            height: 40vw;
-            background: #be185d;
-            opacity: 0.3;
-            animation-duration: 28s;
-        }
-
-
-        /* Material Icons Utility */
-        .material-symbols-rounded {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            font-size: 20px;
-            vertical-align: middle;
-            user-select: none;
-        }
-
-        .material-symbols-rounded.filled {
-            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-
-        .shell {
-            width: 100%;
-            max-width: 960px;
-            margin: 0 auto;
-            /* Explicit centering */
-            padding: 24px 16px 80px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Header */
-        .app-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0;
-            /* Removed 4px padding for strict alignment */
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand-icon {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 44px;
-            height: 44px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #D0BCFF;
-            backdrop-filter: blur(4px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .brand-text-container {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .brand-text-main {
-            font-size: 1.375rem;
-            font-weight: 500;
-            color: #fff;
-            letter-spacing: -0.02em;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .brand-text-sub {
-            font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 400;
-            display: none;
-        }
-
-        @media (min-width: 600px) {
-            .brand-text-sub {
-                display: block;
-            }
-        }
-
-        /* Chips / Badges */
-        .header-auth-btn {
-            height: 40px;
-            padding: 0 20px;
-            border-radius: var(--shape-corner-full);
-            background: rgba(255, 255, 255, 0.08);
-            /* Glassy pill */
-            color: #EADDFF;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-            backdrop-filter: blur(8px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header-auth-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .header-auth-btn.avatar {
-            width: 40px;
-            padding: 0;
-            justify-content: center;
-            background: linear-gradient(135deg, #D0BCFF, #AFA3E3);
-            color: #1e1b4b;
-            font-weight: 700;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Glass Cards */
-        .layout {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            /* Equal columns for symmetry */
-            gap: 20px;
-            width: 100%;
-            max-width: 100%;
-        }
-
-        section {
-            min-width: 0;
-            /* Allow flex/grid items to shrink below content size */
-            max-width: 100%;
-        }
-
-        canvas {
-            max-width: 100%;
-        }
-
-        @media (max-width: 1024px) {
-            .layout {
-                grid-template-columns: 1fr;
-                gap: 16px;
-                /* reduce gap */
-            }
-
-            .card {
-                padding: 16px;
-                /* reduce padding */
-            }
-
-            /* Responsive Badges */
-            .badge-grid {
-                grid-template-columns: repeat(5, 1fr);
-                /* keep 5 if they fit, or... */
-            }
-        }
-
-        @media (max-width: 480px) {
-            .badge-grid {
-                grid-template-columns: repeat(3, 1fr);
-                /* Wrap to 3 columns on very small screens */
-            }
-
-            .brand-text-sub {
-                display: none;
-                /* Hide subtitle on tiny screens to save space */
-            }
-
-            .app-header {
-                padding: 16px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-
-            .header-auth-btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .brand {
-                width: 100%;
-            }
-
-            /* Compact Calendar for Mobile */
-            .calendar-grid {
-                gap: 2px;
-            }
-
-            .day-circle {
-                width: 30px;
-                height: 30px;
-                font-size: 0.75rem;
-                border-radius: 8px;
-            }
-        }
-
-        .card {
-            background: var(--glass-surface);
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            border-radius: var(--shape-corner-large);
-            padding: 24px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.0, 0, 1.0) forwards;
-            position: relative;
-            /* overflow: hidden; Removed to prevent shadow clipping */
-        }
-
-        /* Subtle glare */
-        .card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 60%);
-            pointer-events: none;
-            border-radius: inherit;
-            /* Clip glare to card shape */
-        }
-
-        .card-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .card-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-
-        .card-title .material-symbols-rounded {
-            color: #D0BCFF;
-            filter: drop-shadow(0 0 8px rgba(208, 188, 244, 0.4));
-        }
-
-        .card-subtitle {
-            font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .card-title-pill {
-            display: inline-block;
-            margin-left: 8px;
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--shape-corner-full);
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* Inputs */
-        .row {
-            display: flex;
-            gap: 12px;
-            /* reduced from 16px for mobile */
-            flex-wrap: wrap;
-        }
-
-        .row>div {
-            flex: 1;
-            min-width: 120px;
-            /* Reduced to allow side-by-side on narrower screens */
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        input[type="number"],
-        input[type="date"],
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            height: 56px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.25);
-            color: #fff;
-            padding: 0 16px;
-            font-size: 1rem;
-            transition: all 0.2s;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(5px);
-            margin-bottom: 8px;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #D0BCFF;
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: 0 0 0 4px rgba(208, 188, 255, 0.15);
-        }
-
-        /* Buttons */
-        .primary-btn {
-            height: 52px;
-            background: linear-gradient(135deg, #D0BCFF 0%, #9F85E6 100%);
-            color: #1e1b4b;
-            border-radius: var(--shape-corner-full);
-            border: none;
-            width: 100%;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 0.3px;
-            box-shadow: 0 4px 12px rgba(159, 133, 230, 0.4);
-            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
-        .primary-btn:hover {
-            box-shadow: 0 8px 16px rgba(159, 133, 230, 0.5), inset 0 0 0 2px rgba(255, 255, 255, 0.4);
-            transform: translateY(-1px);
-        }
-
-        .primary-btn:active {
-            transform: scale(0.99);
-        }
-
-        .primary-btn.compact {
-            height: 40px;
-            width: auto;
-            margin-top: 0;
-            padding: 0 24px;
-            font-size: 0.875rem;
-        }
-
-        .secondary-btn {
-            height: 40px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #D0BCFF;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--shape-corner-full);
-            padding: 0 24px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            backdrop-filter: blur(4px);
-        }
-
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .quick-log-btn {
-            height: 56px;
-            width: 56px;
-            padding: 0;
-            border-radius: 16px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #D0BCFF;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .quick-log-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .quick-log-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Fix for input next to button */
-        #drinks-input {
-            flex: 1;
-            width: auto;
-            /* override 100% */
-            min-width: 0;
-            margin-bottom: 8px;
-            /* match original margin */
-        }
-
-        .link-btn {
-            background: none;
-            border: none;
-            color: #D0BCFF;
-            text-decoration: none;
-            cursor: pointer;
-            padding: 0;
-            font-size: 0.875rem;
-            text-shadow: 0 0 10px rgba(208, 188, 255, 0.3);
-        }
-
-        .link-btn:hover {
-            color: #E6E1E5;
-            /* text-light */
-            text-decoration: underline;
-        }
-
-        /* Achievements */
-        .badge-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin-top: 16px;
-        }
-
-        .badge {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.3;
-            filter: grayscale(1);
-            transition: all 0.4s ease;
-        }
-
-        .badge.unlocked {
-            opacity: 1;
-            filter: grayscale(0);
-            transform: scale(1.1);
-        }
-
-        .badge-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-            color: #facc15;
-            text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
-        }
-
-        .badge-label {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-        }
-
-        .badge.unlocked .badge-icon {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        /* Status Box */
-        .status {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 16px;
-            padding: 16px;
-            margin-top: 24px;
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .status-pill {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-top: 6px;
-            flex-shrink: 0;
-            box-shadow: 0 0 10px currentColor;
-            /* glow */
-        }
-
-        .status.over .status-pill {
-            background: var(--color-danger);
-            color: var(--color-danger);
-        }
-
-        .status.under .status-pill {
-            background: var(--color-success);
-            color: var(--color-success);
-        }
-
-        .status.equal .status-pill {
-            background: var(--color-warning);
-            color: var(--color-warning);
-        }
-
-        .status.empty .status-pill {
-            background: #64748b;
-            color: #64748b;
-            box-shadow: none;
-        }
-
-        .status-title {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 4px;
-            color: #fff;
-            font-size: 0.95rem;
-        }
-
-        .status-body {
-            font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.5;
-        }
-
-        /* Calendar */
-        .calendar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            padding: 0 8px;
-        }
-
-        .calendar-month-label {
-            font-weight: 500;
-            font-size: 1rem;
-        }
-
-        .calendar-nav-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #cbd5e1;
-            cursor: pointer;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .calendar-nav-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-            transform: scale(1.05);
-        }
-
-        .calendar-grid {
-            margin-top: 8px;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-
-        .calendar-weekday {
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            padding-bottom: 8px;
-        }
-
-        .calendar-day {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 44px;
-        }
-
-        .day-circle {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.85rem;
-            border-radius: 12px;
-            /* squircle for modern feel */
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            user-select: none;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid transparent;
-            color: #cbd5e1;
-        }
-
-        .day-circle.today {
-            border: 1px solid #D0BCFF;
-            box-shadow: 0 0 12px rgba(208, 188, 255, 0.3);
-        }
-
-        .day-circle:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-            z-index: 2;
-        }
-
-        /* Status Colors for Day Circle */
-        .day-circle.under {
-            color: #000;
-            background: #69f0ae;
-            box-shadow: 0 4px 12px rgba(105, 240, 174, 0.4);
-            border-color: transparent;
-        }
-
-        .day-circle.equal {
-            color: #000;
-            background: #ffe57f;
-            box-shadow: 0 4px 12px rgba(255, 229, 127, 0.4);
-            border-color: transparent;
-        }
-
-        .day-circle.over {
-            color: #fff;
-            background: #ff5252;
-            box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
-            border-color: transparent;
-        }
-
-        .day-circle.no-data {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .calendar-legend {
-            margin-top: 24px;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .calendar-legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .legend-dot.under {
-            background: var(--color-success);
-        }
-
-        .legend-dot.equal {
-            background: var(--color-warning);
-        }
-
-        .legend-dot.over {
-            background: var(--color-danger);
-        }
-
-        .legend-dot.no-data {
-            background: var(--md-sys-color-outline);
-        }
-
-        /* History List */
-        .history-list {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-            max-height: 300px;
-            overflow-y: auto;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .history-item {
-            padding: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            /* softer glass border */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: background 0.2s;
-        }
-
-        .history-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
-        }
-
-        .history-date {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .history-drinks {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .pill {
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .pill.under {
-            background: rgba(129, 201, 149, 0.2);
-            color: #81c995;
-        }
-
-        .pill.equal {
-            background: rgba(253, 214, 99, 0.2);
-            color: #fdd663;
-        }
-
-        .pill.over {
-            background: rgba(242, 139, 130, 0.2);
-            color: #f28b82;
-        }
-
-
-        /* Ripple Effect CSS */
-        .ripple-surface {
-            position: absolute;
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 600ms linear;
-            background-color: rgba(255, 255, 255, 0.3);
-            pointer-events: none;
-        }
-
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-
-        /* Auth Overlay */
-        .auth-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
-        .auth-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .auth-modal {
-            background: rgba(30, 41, 59, 0.85);
-            /* Slightly more opaque for readability */
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 28px;
-            padding: 32px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            transform: scale(0.95) translateY(20px);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .auth-overlay.open .auth-modal {
-            transform: scale(1) translateY(0);
-        }
-
-        .auth-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-
-        .auth-modal-title {
-            font-size: 1.5rem;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-
-        .auth-modal-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
-
-        .auth-close-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .auth-close-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .auth-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .auth-row>div {
-            flex: 1;
-        }
-
-        .auth-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 24px;
-        }
-
-        .auth-status-text {
-            margin-top: 16px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-align: center;
-        }
-
-        .auth-error {
-            color: var(--color-danger);
-            font-size: 0.8rem;
-            margin-top: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/main.css">
 </head>
+
 
 <body>
     <!-- Ambient Background -->
@@ -1105,8 +70,7 @@
                             <div class="card-title">
                                 <span class="material-symbols-rounded">flag</span>
                                 Daily goal
-                                <span id="streak-display"
-                                    style="font-size: 0.8rem; margin-left:12px; transition: all 0.3s;"></span>
+                                <span id="streak-display" class="streak-display"></span>
                             </div>
                             <div class="card-subtitle">
                                 Set your daily limit maximum.
@@ -1118,7 +82,7 @@
                     <input type="number" id="goal-input" min="0" step="1" placeholder="e.g. 0, 1, 2..." />
                 </div>
 
-                <div class="card" style="margin-top: 16px;">
+                <div class="card">
                     <div class="card-header">
                         <div>
                             <div class="card-title">
@@ -1138,7 +102,7 @@
                         </div>
                         <div>
                             <label for="drinks-input">Count</label>
-                            <div style="display: flex; gap: 8px; align-items: center;">
+                            <div class="input-group">
                                 <input type="number" id="drinks-input" min="0" step="1" placeholder="0" />
                                 <button id="quick-add-btn" class="quick-log-btn">
                                     <span class="material-symbols-rounded">add</span>
@@ -1163,18 +127,17 @@
                     </div>
                 </div>
                 <!-- Daily Inspiration -->
-                <div class="card" style="margin-top: 16px; border-color: rgba(208, 188, 255, 0.2);">
+                <div class="card daily-inspiration">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="material-symbols-rounded">format_quote</span>
                             Daily Inspiration
                         </div>
                     </div>
-                    <div style="font-style: italic; color: #E6E1E5; line-height: 1.5; margin-bottom: 8px;"
-                        id="quote-text">
+                    <div id="quote-text" class="quote-text">
                         "The journey of a thousand miles begins with a single step."
                     </div>
-                    <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);" id="quote-author">
+                    <div id="quote-author" class="quote-author">
                         - Lao Tzu
                     </div>
                 </div>
@@ -1183,7 +146,7 @@
             <!-- Right column: calendar + history -->
             <section>
                 <!-- Weekly Insights -->
-                <div class="card" style="margin-bottom: 16px;">
+                <div class="card">
                     <div class="card-header">
                         <div>
                             <div class="card-title">
@@ -1192,21 +155,20 @@
                             </div>
                         </div>
                     </div>
-                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                    <div class="weekly-stats-container">
                         <div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Total</div>
-                            <div id="weekly-total" style="font-size: 1.5rem; font-weight: 700; color: #EADDFF;">-</div>
+                            <div class="weekly-stat-label">Total</div>
+                            <div id="weekly-total" class="weekly-stat-value total">-</div>
                         </div>
                         <div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Daily Avg
-                            </div>
-                            <div id="weekly-avg" style="font-size: 1.5rem; font-weight: 700; color: #D0BCFF;">-</div>
+                            <div class="weekly-stat-label">Daily Avg</div>
+                            <div id="weekly-avg" class="weekly-stat-value average">-</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Achievements -->
-                <div class="card" style="margin-bottom: 16px;">
+                <div class="card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="material-symbols-rounded">emoji_events</span>
@@ -1242,7 +204,7 @@
                     </div>
                 </div>
 
-                <div class="card" style="margin-bottom: 16px;">
+                <div class="card">
                     <div class="card-header">
                         <div>
                             <div class="card-title">
@@ -1252,7 +214,7 @@
                             <div class="card-subtitle">Last 14 days</div>
                         </div>
                     </div>
-                    <div style="position: relative; height: 160px; width: 100%;">
+                    <div class="trends-chart-container">
                         <canvas id="trends-chart"></canvas>
                     </div>
                 </div>
@@ -1285,7 +247,7 @@
                     </div>
                 </div>
 
-                <div class="card" style="margin-top: 16px;">
+                <div class="card">
                     <div class="card-header">
                         <div>
                             <div class="card-title">
@@ -1297,25 +259,12 @@
                     <ul class="history-list" id="history-list"></ul>
                 </div>
                 <!-- Footer -->
-                <footer
-                    style="margin-top: 40px; text-align: center; color: var(--text-muted); font-size: 0.8rem; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;">
-                    <a href="privacy.html"
-                        style="color: inherit; text-decoration: none; opacity: 0.7; transition: opacity 0.2s;">Privacy
-                        Policy</a>
-                    <a href="status.html"
-                        style="color: inherit; text-decoration: none; opacity: 0.7; transition: opacity 0.2s;">System
-                        Status</a>
-                    <a href="#" id="export-btn"
-                        style="color: inherit; text-decoration: none; opacity: 0.7; transition: opacity 0.2s;">Export
-                        Data</a>
+                <!-- Footer -->
+                <footer>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="status.html">System Status</a>
+                    <a href="#" id="export-btn">Export Data</a>
                 </footer>
-
-                <style>
-                    footer a:hover {
-                        opacity: 1 !important;
-                        text-decoration: underline !important;
-                    }
-                </style>
         </main>
     </div>
 
@@ -1357,13 +306,13 @@
                     sign
                     in.
                 </div>
-                <div class="auth-status-text" style="margin-top: 4px;">
+                <div class="auth-status-text">
                     <button class="link-btn" id="auth-forgot-btn">Forgot your password?</button>
                 </div>
                 <div class="auth-error" id="auth-error"></div>
             </div>
 
-            <div id="auth-modal-logged-in" style="display:none;">
+            <div id="auth-modal-logged-in" style="display: none;">
                 <div class="auth-status-text">
                     Signed in as <strong id="auth-user-email"></strong><br />
                     Cloud sync is enabled. Changes are saved locally and to your account.
@@ -1379,7 +328,7 @@
     <!-- Your private config (not checked into git) -->
     <script src="config.js"></script>
     <!-- Main app logic -->
-    <script src="main.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 
 </html>

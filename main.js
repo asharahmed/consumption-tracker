@@ -553,11 +553,14 @@ saveBtn.addEventListener("click", async () => {
 });
 
 // Initial render from local
-updateStatusForDate(dateInput.value);
-buildHistoryList();
-renderCalendar();
-renderTrendsChart();
-updateAuthUI();
+// Initial render from local
+document.addEventListener("DOMContentLoaded", () => {
+  updateStatusForDate(dateInput.value);
+  buildHistoryList();
+  renderCalendar();
+  renderTrendsChart();
+  updateAuthUI();
+});
 
 // PWA service worker
 if ("serviceWorker" in navigator) {
@@ -573,9 +576,11 @@ if ("serviceWorker" in navigator) {
 let trendsChart = null;
 
 function renderTrendsChart() {
-  const ctx = document.getElementById("trends-chart").getContext("2d");
+  const canvas = document.getElementById("trends-chart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
   const goal = Number(state.goal) || 0;
-  
+
   // 1. Calculate last 14 days
   const labels = [];
   const dataPoints = [];
@@ -585,29 +590,29 @@ function renderTrendsChart() {
   for (let i = 13; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    
+
     // Format YYYY-MM-DD manually to avoid timezone weirdness
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const isoDate = `${year}-${month}-${day}`;
-    
+
     // Short label for X axis (e.g. "15", "16")
     labels.push(day); // just the day number
-    
+
     const value = state.entries[isoDate];
     // if undefined, we can push null or 0. Let's push 0 for visual continuity in a bar chart, 
     // but maybe distinquish "0 drinks" from "no data"? 
     // For simplicity, if no data, let's treat as 0 but maybe style it? 
     // Actually, let's just show what is there.
-    
+
     let renderVal = 0;
     if (value !== undefined) {
       renderVal = value;
     }
-    
+
     dataPoints.push(renderVal);
-    
+
     // Color logic
     if (value === undefined) {
       // No data -> greyish
@@ -648,7 +653,7 @@ function renderTrendsChart() {
   } else {
     Chart.defaults.color = "#9ca3af";
     Chart.defaults.font.family = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    
+
     trendsChart = new Chart(ctx, {
       type: "bar",
       data: {
@@ -681,13 +686,13 @@ function renderTrendsChart() {
             borderColor: 'rgba(148, 163, 184, 0.2)',
             borderWidth: 1,
             callbacks: {
-                label: function(context) {
-                    if (context.parsed.y === 0 && !state.entries[isoOf(today.getFullYear(), today.getMonth(), Number(context.label))]) {
-                        // This logic is tricky because we just have 'day' as label. 
-                        // Simplified: just show value.
-                    }
-                    return context.parsed.y + " drinks";
+              label: function (context) {
+                if (context.parsed.y === 0 && !state.entries[isoOf(today.getFullYear(), today.getMonth(), Number(context.label))]) {
+                  // This logic is tricky because we just have 'day' as label. 
+                  // Simplified: just show value.
                 }
+                return context.parsed.y + " drinks";
+              }
             }
           },
         },
@@ -708,7 +713,7 @@ function renderTrendsChart() {
           },
         },
         animation: {
-            duration: 400
+          duration: 400
         }
       },
     });

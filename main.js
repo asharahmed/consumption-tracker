@@ -130,77 +130,111 @@ function updateStatusForDate(dateStr) {
   }
 }
 
+function getDrinkStatus(drinks, goal) {
+  const diff = drinks - goal;
+  if (goal === 0 && drinks === 0) return { className: "under", text: "on track" };
+  if (goal === 0 && drinks > 0) return { className: "over", text: "over" };
+  if (diff < 0) return { className: "under", text: "under" };
+  if (diff === 0) return { className: "equal", text: "at goal" };
+  return { className: "over", text: "over" };
+}
+
+function updatePill(pill, drinks, goal) {
+  const status = getDrinkStatus(drinks, goal);
+  const newClassName = `pill ${status.className}`;
+  if (pill.className !== newClassName) {
+    pill.className = newClassName;
+  }
+  if (pill.textContent !== status.text) {
+    pill.textContent = status.text;
+  }
+}
+
+function createHistoryItem({ date, drinks }, goal) {
+  const li = document.createElement("li");
+  li.className = "history-item";
+  li.dataset.date = date;
+
+  const left = document.createElement("div");
+  left.className = "history-date";
+  left.textContent = date;
+
+  const right = document.createElement("div");
+  right.className = "history-drinks";
+
+  const textSpan = document.createElement("span");
+  textSpan.textContent = `${drinks} drink(s)`;
+
+  const pill = document.createElement("span");
+  updatePill(pill, drinks, goal);
+
+  right.appendChild(textSpan);
+  right.appendChild(pill);
+  li.appendChild(left);
+  li.appendChild(right);
+  return li;
+}
+
 function buildHistoryList() {
+  // Performance optimization: Instead of clearing and rebuilding the entire list,
+  // this function reuses existing DOM elements. It updates their content and
+  // reorders them if necessary. This significantly reduces DOM manipulation,
+  // leading to a faster and smoother UI, especially when the goal value changes
+  // or a single entry is updated.
   const items = Object.entries(state.entries)
     .map(([date, drinks]) => ({ date, drinks }))
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 30);
 
-  historyList.innerHTML = "";
-
+  // Handle the empty state
   if (items.length === 0) {
-    const li = document.createElement("li");
-    li.className = "history-item";
-    li.textContent = "No history yet. Your first log will show up here.";
-    historyList.appendChild(li);
+    historyList.innerHTML = `<li class="history-item">No history yet. Your first log will show up here.</li>`;
     return;
   }
 
   const goal = Number(state.goal) || 0;
-
-  items.forEach(({ date, drinks }) => {
-    const li = document.createElement("li");
-    li.className = "history-item";
-
-    const left = document.createElement("div");
-    left.className = "history-date";
-    left.textContent = date;
-
-    const right = document.createElement("div");
-    right.className = "history-drinks";
-
-    const textSpan = document.createElement("span");
-    textSpan.textContent = `${drinks} drink(s)`;
-
-    const pill = document.createElement("span");
-    pill.className = "pill";
-    let diff = drinks - goal;
-
-    if (goal === 0 && drinks === 0) {
-      pill.classList.add("under");
-      pill.textContent = "on track";
-    } else if (goal === 0 && drinks > 0) {
-      pill.classList.add("over");
-      pill.textContent = "over";
-    } else if (diff < 0) {
-      pill.classList.add("under");
-      pill.textContent = "under";
-    } else if (diff === 0) {
-      pill.classList.add("equal");
-      pill.textContent = "at goal";
-    } else {
-      pill.classList.add("over");
-      pill.textContent = "over";
-    }
-
-    right.appendChild(textSpan);
-    right.appendChild(pill);
-
-    li.appendChild(left);
-    li.appendChild(right);
-
-    li.addEventListener("click", () => {
-      dateInput.value = date;
-      drinksInput.value = drinks;
-      updateStatusForDate(date);
-      const d = new Date(date);
-      calendarYear = d.getFullYear();
-      calendarMonthIndex = d.getMonth();
-      renderCalendar();
-    });
-
-    historyList.appendChild(li);
+  const nodesToRender = [];
+  const existingNodesByDate = new Map();
+  historyList.querySelectorAll(".history-item[data-date]").forEach(node => {
+    existingNodesByDate.set(node.dataset.date, node);
   });
+
+  const datesInNewItems = new Set();
+
+  // Create or update nodes for each item
+  items.forEach(item => {
+    datesInNewItems.add(item.date);
+    let node = existingNodesByDate.get(item.date);
+    if (node) {
+      // Update existing node
+      const drinksText = `${item.drinks} drink(s)`;
+      const currentDrinksEl = node.querySelector(".history-drinks span:first-child");
+      if (currentDrinksEl.textContent !== drinksText) {
+        currentDrinksEl.textContent = drinksText;
+      }
+      const pillEl = node.querySelector(".pill");
+      updatePill(pillEl, item.drinks, goal);
+    } else {
+      // Create new node
+      node = createHistoryItem(item, goal);
+    }
+    nodesToRender.push(node);
+  });
+
+  // Remove old nodes that are no longer needed
+  existingNodesByDate.forEach((node, date) => {
+    if (!datesInNewItems.has(date)) {.
+      node.remove();
+    }
+  });
+
+  // Re-append all nodes in the correct order. This is faster than trying
+  // to surgically move them. The nodes themselves are preserved.
+  const fragment = document.createDocumentFragment();
+  nodesToRender.forEach(node => fragment.appendChild(node));
+
+  historyList.innerHTML = ''; // Clear content
+  historyList.appendChild(fragment);
 }
 
 function changeMonth(delta) {
@@ -219,7 +253,43 @@ function renderCalendar() {
   const goal = Number(state.goal) || 0;
   const todayIso = todayISO();
 
+  const existingYear = calendarContainer.dataset.year;
+  const existingMonth = calendarContainer.dataset.month;
+
+  if (String(calendarYear) === existingYear && String(calendarMonthIndex) === existingMonth) {
+    // Performance Optimization: If the calendar is for the same month and year,
+    // we don't need to rebuild the entire DOM. Instead, we just update the
+    // classes for each day circle. This makes selecting different dates
+    // within the same month feel instantaneous.
+    const dayCircles = calendarContainer.querySelectorAll('.day-circle');
+    dayCircles.forEach(circle => {
+      const day = Number(circle.textContent);
+      if (!day) return;
+      const isoDate = isoOf(calendarYear, calendarMonthIndex, day);
+      const drinks = state.entries[isoDate];
+
+      const newClasses = ["day-circle"];
+      if (drinks === undefined) {
+        newClasses.push("no-data");
+      } else {
+        const status = getDrinkStatus(drinks, goal);
+        newClasses.push(status.className);
+      }
+
+      if (isoDate === todayIso) {
+        newClasses.push("today");
+      }
+      const newClassName = newClasses.join(" ");
+      if (circle.className !== newClassName) {
+        circle.className = newClassName;
+      }
+    });
+    return;
+  }
+
   calendarContainer.innerHTML = "";
+  calendarContainer.dataset.year = calendarYear;
+  calendarContainer.dataset.month = calendarMonthIndex;
 
   const firstDay = new Date(calendarYear, calendarMonthIndex, 1);
   const monthName = firstDay.toLocaleString(undefined, { month: "long" });
@@ -492,6 +562,23 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 // ---- Form bindings ----
+
+historyList.addEventListener("click", (e) => {
+  const li = e.target.closest(".history-item");
+  if (!li) return;
+  const date = li.dataset.date;
+  if (!date) return;
+
+  const drinks = state.entries[date];
+
+  dateInput.value = date;
+  drinksInput.value = drinks !== undefined ? drinks : "";
+  updateStatusForDate(date);
+  const d = new Date(date);
+  calendarYear = d.getFullYear();
+  calendarMonthIndex = d.getMonth();
+  renderCalendar();
+});
 
 goalInput.value = state.goal || 0;
 dateInput.value = todayISO();

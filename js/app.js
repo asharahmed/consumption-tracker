@@ -1,4 +1,4 @@
-import { state, saveLocalState } from './state.js';
+import { state, saveLocalState, getEntryCount, getEntryNotes, setEntry } from './state.js';
 import { todayISO, attachRipple } from './utils.js';
 import { initAuth } from './auth.js';
 import { saveRemoteState } from './db.js';
@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const goalInput = document.getElementById("goal-input");
     const dateInput = document.getElementById("date-input");
     const drinksInput = document.getElementById("drinks-input");
+    const notesInput = document.getElementById("notes-input");
+    const notesCharCount = document.getElementById("notes-char-count");
     const saveBtn = document.getElementById("save-btn");
     const exportBtn = document.getElementById('export-btn');
     const quickAddBtn = document.getElementById('quick-add-btn');
@@ -32,7 +34,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Set initial inputs
     if (goalInput) goalInput.value = state.goal || 0;
     if (dateInput) dateInput.value = todayISO();
-    if (drinksInput && dateInput) drinksInput.value = state.entries[todayISO()] ?? "";
+    if (drinksInput && dateInput) {
+        const count = getEntryCount(todayISO());
+        drinksInput.value = count || "";
+    }
+    if (notesInput && dateInput) {
+        const notes = getEntryNotes(todayISO());
+        notesInput.value = notes;
+        if (notesCharCount) notesCharCount.textContent = notes.length;
+    }
 
     // Initial Renders
     if (dateInput) updateStatusForDate(dateInput.value);
@@ -65,12 +75,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dateInput) {
         dateInput.addEventListener("change", () => {
             const date = dateInput.value;
-            if (drinksInput) drinksInput.value = state.entries[date] ?? "";
+            if (drinksInput) {
+                const count = getEntryCount(date);
+                drinksInput.value = count || "";
+            }
+            if (notesInput) {
+                const notes = getEntryNotes(date);
+                notesInput.value = notes;
+                if (notesCharCount) notesCharCount.textContent = notes.length;
+            }
             updateStatusForDate(date);
-            // Note: We are not syncing calendar year/month yet, so calendar stays on current month
-            // unless we expose setMonth from calendar module.
-            // For componentization refactor, this is an acceptable minor behavior change 
-            // (feature parity mostly preserved).
             renderCalendar();
         });
     }
@@ -79,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         saveBtn.addEventListener("click", async () => {
             const date = dateInput.value;
             const drinks = Number(drinksInput.value);
+            const notes = notesInput ? notesInput.value.trim() : '';
 
             if (!date) {
                 alert("Please select a date.");
@@ -89,7 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            state.entries[date] = drinks;
+            // Use new setEntry helper
+            setEntry(date, drinks, notes);
             saveLocalState(state);
 
             // Confetti Logic
@@ -120,6 +136,13 @@ document.addEventListener("DOMContentLoaded", () => {
         quickAddBtn.addEventListener('click', () => {
             const current = parseInt(drinksInput.value) || 0;
             drinksInput.value = current + 1;
+        });
+    }
+
+    // Character counter for notes
+    if (notesInput && notesCharCount) {
+        notesInput.addEventListener('input', () => {
+            notesCharCount.textContent = notesInput.value.length;
         });
     }
 

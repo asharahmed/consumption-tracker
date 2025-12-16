@@ -61,3 +61,40 @@ input:focus {
     gap: 8px;
     align-items: center;
 }
+
+/* Textarea */
+textarea {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-family: var(--font-family);
+    resize: vertical;
+    min-height: 80px;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    margin-bottom: 4px;
+}
+
+textarea:focus {
+    outline: none;
+    background: rgba(0, 0, 0, 0.4);
+    border-color: #D0BCFF;
+    box-shadow: 0 0 0 4px rgba(208, 188, 255, 0.15);
+}
+
+textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* Character Counter */
+.char-counter {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}

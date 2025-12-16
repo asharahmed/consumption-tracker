@@ -1,4 +1,4 @@
-import { state, saveLocalState } from './state.js';
+import { state, saveLocalState, getEntryCount, getEntryNotes, setEntry, deleteEntry } from './state.js';
 import { isoOf, todayISO } from './utils.js';
 import { renderCalendar } from './calendar.js';
 import { renderTrendsChart } from './charts.js';
@@ -46,10 +46,10 @@ export function calculateStreak() {
     const t = new Date();
     const todayStr = isoOf(t.getFullYear(), t.getMonth(), t.getDate());
 
-    const todayVal = state.entries[todayStr];
+    const todayVal = getEntryCount(todayStr);
     let checkDate = new Date();
 
-    if (todayVal !== undefined) {
+    if (todayVal !== undefined && todayVal !== 0) {
         if (todayVal > goal) return 0;
         streak++;
         checkDate.setDate(checkDate.getDate() - 1);
@@ -62,7 +62,7 @@ export function calculateStreak() {
         const m = checkDate.getMonth();
         const d = checkDate.getDate();
         const iso = isoOf(y, m, d);
-        const val = state.entries[iso];
+        const val = getEntryCount(iso);
 
         if (val !== undefined && val <= goal) {
             streak++;
@@ -90,7 +90,7 @@ export function calculateZeroStreak(endDateStr) {
         const m = checkDate.getMonth();
         const d = checkDate.getDate();
         const iso = isoOf(y, m, d);
-        const val = state.entries[iso];
+        const val = getEntryCount(iso);
 
         if (val === 0) {
             streak++;
@@ -104,9 +104,9 @@ export function calculateZeroStreak(endDateStr) {
 
 export function updateStatusForDate(dateStr) {
     const goal = Number(state.goal) || 0;
-    const drinks = state.entries[dateStr];
+    const drinks = getEntryCount(dateStr);
 
-    if (drinks === undefined) {
+    if (drinks === undefined || drinks === 0 && getEntryNotes(dateStr) === '') {
         setStatus(
             "empty",
             "No data for this date yet",
@@ -186,8 +186,14 @@ export function buildHistoryList() {
     const goal = Number(state.goal) || 0;
 
     items.forEach(({ date, drinks }) => {
+        const count = typeof drinks === 'number' ? drinks : drinks.count || 0;
+        const notes = typeof drinks === 'object' ? drinks.notes || '' : '';
+
         const li = document.createElement("li");
         li.className = "history-item";
+
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "history-content";
 
         const left = document.createElement("div");
         left.className = "history-date";
@@ -197,16 +203,16 @@ export function buildHistoryList() {
         right.className = "history-drinks";
 
         const textSpan = document.createElement("span");
-        textSpan.textContent = `${drinks} drink(s)`;
+        textSpan.textContent = `${count} drink(s)`;
 
         const pill = document.createElement("span");
         pill.className = "pill";
-        let diff = drinks - goal;
+        let diff = count - goal;
 
-        if (goal === 0 && drinks === 0) {
+        if (goal === 0 && count === 0) {
             pill.classList.add("under");
             pill.textContent = "on track";
-        } else if (goal === 0 && drinks > 0) {
+        } else if (goal === 0 && count > 0) {
             pill.classList.add("over");
             pill.textContent = "over";
         } else if (diff < 0) {
@@ -223,29 +229,102 @@ export function buildHistoryList() {
         right.appendChild(textSpan);
         right.appendChild(pill);
 
-        li.appendChild(left);
-        li.appendChild(right);
+        contentDiv.appendChild(left);
+        contentDiv.appendChild(right);
 
-        li.addEventListener("click", () => {
-            const dateIn = document.getElementById("date-input");
-            const drinksIn = document.getElementById("drinks-input");
-            if (dateIn) dateIn.value = date;
-            if (drinksIn) drinksIn.value = drinks;
-            updateStatusForDate(date);
+        // Add notes if present
+        if (notes) {
+            const notesDiv = document.createElement("div");
+            notesDiv.className = "history-notes";
+            notesDiv.textContent = notes.length > 60 ? notes.substring(0, 60) + '...' : notes;
+            contentDiv.appendChild(notesDiv);
+        }
 
-            // We need to change calendar month if needed?
-            // Calendar handling is in main usually, but here calling renderCalendar directly
-            // might not update month index in calendar module.
-            // This is a small issue. `calendarYear` is local to calendar module.
-            // We can export helpers to set year/month or just let it render what it has?
-            // Ideally we want to jump to that month. But calendar module doesn't expose setYear/Month.
-            // For now, simpler is fine.
+        // Add action buttons
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "history-actions";
 
-            renderCalendar();
+        const editBtn = document.createElement("button");
+        editBtn.className = "icon-btn edit-btn";
+        editBtn.innerHTML = '<span class="material-symbols-rounded">edit</span>';
+        editBtn.title = "Edit entry";
+        editBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            handleEdit(date);
         });
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "icon-btn delete-btn";
+        deleteBtn.innerHTML = '<span class="material-symbols-rounded">delete</span>';
+        deleteBtn.title = "Delete entry";
+        deleteBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            handleDelete(date);
+        });
+
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+
+        li.appendChild(contentDiv);
+        li.appendChild(actionsDiv);
 
         list.appendChild(li);
     });
+}
+
+// Handle edit action
+function handleEdit(date) {
+    const dateInput = document.getElementById("date-input");
+    const drinksInput = document.getElementById("drinks-input");
+    const notesInput = document.getElementById("notes-input");
+    const notesCharCount = document.getElementById("notes-char-count");
+
+    const count = getEntryCount(date);
+    const notes = getEntryNotes(date);
+
+    if (dateInput) dateInput.value = date;
+    if (drinksInput) drinksInput.value = count;
+    if (notesInput) {
+        notesInput.value = notes;
+        if (notesCharCount) notesCharCount.textContent = notes.length;
+    }
+
+    updateStatusForDate(date);
+    renderCalendar();
+
+    // Scroll to form
+    const card = document.querySelector('.card');
+    if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (drinksInput) {
+            setTimeout(() => drinksInput.focus(), 300);
+        }
+    }
+}
+
+// Handle delete action
+function handleDelete(date) {
+    if (confirm(`Delete entry for ${date}?\n\nThis action cannot be undone.`)) {
+        deleteEntry(date);
+        saveLocalState(state);
+
+        // Update all UI
+        buildHistoryList();
+        renderCalendar();
+        renderTrendsChart();
+        updateBadges();
+
+        const dateInput = document.getElementById("date-input");
+        if (dateInput && dateInput.value === date) {
+            updateStatusForDate(date);
+        }
+
+        // Sync to cloud
+        import('./db.js').then(module => {
+            const db = firebase.firestore();
+            module.saveRemoteState(db);
+        });
+    }
 }
 
 export function calculateWeeklyStats() {
@@ -257,8 +336,8 @@ export function calculateWeeklyStats() {
         const d = new Date();
         d.setDate(today.getDate() - i);
         const iso = isoOf(d.getFullYear(), d.getMonth(), d.getDate());
-        const val = state.entries[iso];
-        if (val !== undefined) {
+        const val = getEntryCount(iso);
+        if (val !== undefined && val !== 0) {
             total += val;
             daysWithData++;
         }
@@ -285,11 +364,13 @@ export function fireConfetti() {
 }
 
 export function exportData() {
-    const rows = [["Date", "Drinks", "Goal (At Time of Export)"]];
+    const rows = [["Date", "Drinks", "Notes", "Goal (At Time of Export)"]];
     const goal = state.goal || 0;
 
     Object.keys(state.entries).sort().forEach(date => {
-        rows.push([date, state.entries[date], goal]);
+        const count = getEntryCount(date);
+        const notes = getEntryNotes(date);
+        rows.push([date, count, notes.replace(/,/g, ';'), goal]);
     });
 
     let csvContent = "data:text/csv;charset=utf-8,"

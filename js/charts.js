@@ -1,4 +1,4 @@
-import { state } from './state.js';
+import { state, getEntryCount } from './state.js';
 
 let trendsChart = null;
 
@@ -27,25 +27,25 @@ export function renderTrendsChart() {
         // Short label for X axis (e.g. "15")
         labels.push(day);
 
-        const value = state.entries[isoDate];
+        const count = getEntryCount(isoDate);
 
         let renderVal = 0;
-        if (value !== undefined) {
-            renderVal = value;
+        if (count !== undefined) {
+            renderVal = count;
         }
 
         dataPoints.push(renderVal);
 
         // Color logic
-        if (value === undefined) {
+        if (count === undefined || count === 0 && renderVal === 0) {
             bgColors.push("rgba(147, 143, 153, 0.2)");
             borderColors.push("#938F99");
         } else {
-            const diff = value - goal;
-            if (goal === 0 && value === 0) {
+            const diff = count - goal;
+            if (goal === 0 && count === 0) {
                 bgColors.push("rgba(129, 201, 149, 0.7)");
                 borderColors.push("#81c995");
-            } else if (goal === 0 && value > 0) {
+            } else if (goal === 0 && count > 0) {
                 bgColors.push("rgba(242, 139, 130, 0.7)");
                 borderColors.push("#f28b82");
             } else if (diff < 0) {

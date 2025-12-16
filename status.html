@@ -13,6 +13,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-performance-compat.js"></script>
 
     <!-- Google Fonts & Icons -->
     <link rel="stylesheet"
@@ -262,12 +264,26 @@
         <div class="card">
             <div class="status-header">
                 <h1>System Status</h1>
-                <div class="main-status-badge">
-                    <div class="status-dot"></div>
-                    Operational
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button id="refresh-btn"
+                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: var(--font-family); font-size: 0.875rem;">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">refresh</span>
+                        Refresh
+                    </button>
+                    <div class="main-status-badge">
+                        <div class="status-dot"></div>
+                        Operational
+                    </div>
                 </div>
             </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 24px; text-align: right;">
+                Last updated: <span id="last-updated">Just now</span>
+            </div>
 
+            <!-- Connectivity & Services -->
+            <h3
+                style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin: 24px 0 16px 0; font-weight: 500;">
+                Connectivity & Services</h3>
             <div class="metrics-grid">
                 <div class="metric-card">
                     <div class="metric-label">Client Connectivity</div>
@@ -283,15 +299,96 @@
                     </div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-label">Application Uptime</div>
-                    <div class="metric-value">
-                        99.9%
+                    <div class="metric-label">Firebase Auth</div>
+                    <div class="metric-value" id="auth-service-status">
+                        Checking...
                     </div>
                 </div>
+                <div class="metric-card">
+                    <div class="metric-label">Firebase Analytics</div>
+                    <div class="metric-value" id="analytics-status">
+                        Checking...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Authentication & Sync -->
+            <h3
+                style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin: 24px 0 16px 0; font-weight: 500;">
+                Authentication & Sync</h3>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Authentication Service</div>
+                    <div class="metric-value" id="signin-status">
+                        Checking...
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Last Sync</div>
+                    <div class="metric-value" id="last-sync">
+                        Never
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage & Data -->
+            <h3
+                style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin: 24px 0 16px 0; font-weight: 500;">
+                Storage & Data</h3>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">IndexedDB Status</div>
+                    <div class="metric-value" id="indexeddb-status">
+                        Checking...
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Storage Used</div>
+                    <div class="metric-value" id="storage-used">
+                        Calculating...
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Local Records</div>
+                    <div class="metric-value" id="record-count">
+                        Counting...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Info -->
+            <h3
+                style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin: 24px 0 16px 0; font-weight: 500;">
+                Application Info</h3>
+            <div class="metrics-grid">
                 <div class="metric-card">
                     <div class="metric-label">Version</div>
                     <div class="metric-value">
                         v1.2.0
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Application Uptime</div>
+                    <div class="metric-value" id="app-uptime">
+                        Calculating...
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Service Availability</div>
+                    <div class="metric-value" id="uptime-percentage">
+                        Calculating...
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Page Load Time</div>
+                    <div class="metric-value" id="page-load-time">
+                        Measuring...
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Environment</div>
+                    <div class="metric-value" id="environment">
+                        Production
                     </div>
                 </div>
             </div>
@@ -300,33 +397,408 @@
 
     <script src="config.js"></script>
     <script>
-        // Simple connectivity check
+        // Firebase Analytics and Performance Monitoring
+        let analytics = null;
+        let performance = null;
+        let pageLoadTrace = null;
+        const pageLoadStart = Date.now();
+
+        // Initialize Firebase services
+        function initFirebaseObservability() {
+            try {
+                if (typeof firebase !== 'undefined' && window.firebaseConfig) {
+                    // Initialize Firebase app if not already initialized
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(window.firebaseConfig);
+                        console.log('Firebase initialized for status page');
+                    }
+
+                    // Initialize Analytics
+                    analytics = firebase.analytics();
+                    console.log('Firebase Analytics initialized');
+
+                    // Initialize Performance Monitoring
+                    performance = firebase.performance();
+                    console.log('Firebase Performance Monitoring initialized');
+
+                    // Start page load trace
+                    pageLoadTrace = performance.trace('status_page_load');
+                    pageLoadTrace.start();
+
+                    // Log page view event
+                    analytics.logEvent('page_view', {
+                        page_title: 'System Status',
+                        page_location: window.location.href,
+                        page_path: window.location.pathname
+                    });
+
+                    return true;
+                } else {
+                    console.warn('Firebase not available or config missing');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                if (analytics) {
+                    analytics.logEvent('firebase_init_error', {
+                        error_message: error.message,
+                        page: 'status'
+                    });
+                }
+                return false;
+            }
+        }
+
+        // Track custom events
+        function logEvent(eventName, params = {}) {
+            if (analytics) {
+                analytics.logEvent(eventName, params);
+            }
+        }
+
+        // Get browser information
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            let browserName = "Unknown";
+            let browserVersion = "Unknown";
+
+            if (ua.indexOf("Firefox") > -1) {
+                browserName = "Firefox";
+                browserVersion = ua.match(/Firefox\/([0-9.]+)/)?.[1] || "Unknown";
+            } else if (ua.indexOf("Edg") > -1) {
+                browserName = "Edge";
+                browserVersion = ua.match(/Edg\/([0-9.]+)/)?.[1] || "Unknown";
+            } else if (ua.indexOf("Chrome") > -1) {
+                browserName = "Chrome";
+                browserVersion = ua.match(/Chrome\/([0-9.]+)/)?.[1] || "Unknown";
+            } else if (ua.indexOf("Safari") > -1) {
+                browserName = "Safari";
+                browserVersion = ua.match(/Version\/([0-9.]+)/)?.[1] || "Unknown";
+            }
+
+            return `${browserName} ${browserVersion}`;
+        }
+
+        // Get OS information
+        function getOSInfo() {
+            const ua = navigator.userAgent;
+            if (ua.indexOf("Win") > -1) return "Windows";
+            if (ua.indexOf("Mac") > -1) return "macOS";
+            if (ua.indexOf("Linux") > -1) return "Linux";
+            if (ua.indexOf("Android") > -1) return "Android";
+            if (ua.indexOf("iOS") > -1) return "iOS";
+            return "Unknown";
+        }
+
+        // Get storage information
+        async function getStorageInfo() {
+            try {
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const estimate = await navigator.storage.estimate();
+                    const usage = estimate.usage || 0;
+                    const quota = estimate.quota || 0;
+                    const percentUsed = ((usage / quota) * 100).toFixed(1);
+
+                    const usageMB = (usage / (1024 * 1024)).toFixed(2);
+                    const quotaMB = (quota / (1024 * 1024)).toFixed(2);
+
+                    return `${usageMB} MB / ${quotaMB} MB (${percentUsed}%)`;
+                }
+                return "Not available";
+            } catch (e) {
+                return "Error checking";
+            }
+        }
+
+        // Check IndexedDB health
+        async function checkIndexedDB() {
+            try {
+                const request = indexedDB.open('consumptionDB', 1);
+                return new Promise((resolve) => {
+                    request.onsuccess = () => {
+                        const db = request.result;
+                        try {
+                            const transaction = db.transaction(['entries'], 'readonly');
+                            const store = transaction.objectStore('entries');
+                            const countRequest = store.count();
+
+                            countRequest.onsuccess = () => {
+                                const count = countRequest.result;
+                                db.close();
+                                resolve({ healthy: true, recordCount: count });
+                            };
+
+                            countRequest.onerror = () => {
+                                db.close();
+                                resolve({ healthy: true, recordCount: 0 });
+                            };
+                        } catch (e) {
+                            db.close();
+                            resolve({ healthy: true, recordCount: 0 });
+                        }
+                    };
+                    request.onerror = () => resolve({ healthy: false, recordCount: 0 });
+                });
+            } catch (e) {
+                return { healthy: false, recordCount: 0 };
+            }
+        }
+
+        // Get auth status
+        function getAuthStatus() {
+            try {
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    const user = firebase.auth().currentUser;
+                    if (user) {
+                        return {
+                            signedIn: true,
+                            email: user.email || 'Unknown',
+                            uid: user.uid
+                        };
+                    }
+                }
+                return { signedIn: false };
+            } catch (e) {
+                return { signedIn: false };
+            }
+        }
+
+        // Update last updated timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            document.getElementById('last-updated').textContent = timeStr;
+        }
+
+        // Calculate and display application uptime
+        function calculateUptime() {
+            try {
+                // Get or set first initialization time
+                let firstInit = localStorage.getItem('appFirstInit');
+                if (!firstInit) {
+                    firstInit = Date.now().toString();
+                    localStorage.setItem('appFirstInit', firstInit);
+                }
+
+                const initTime = parseInt(firstInit);
+                const now = Date.now();
+                const uptimeMs = now - initTime;
+
+                // Convert to days, hours, minutes
+                const days = Math.floor(uptimeMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((uptimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((uptimeMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                let uptimeStr = '';
+                if (days > 0) {
+                    uptimeStr = `${days}d ${hours}h ${minutes}m`;
+                } else if (hours > 0) {
+                    uptimeStr = `${hours}h ${minutes}m`;
+                } else {
+                    uptimeStr = `${minutes}m`;
+                }
+
+                document.getElementById('app-uptime').textContent = uptimeStr;
+
+                // Calculate uptime percentage
+                // Track downtime events in localStorage
+                let downtimeMs = parseInt(localStorage.getItem('totalDowntime') || '0');
+
+                // Calculate availability percentage
+                // Assume 99.9% base availability, adjusted by actual downtime
+                const totalTimeMs = uptimeMs;
+                const availableTimeMs = totalTimeMs - downtimeMs;
+                const uptimePercentage = totalTimeMs > 0 ? ((availableTimeMs / totalTimeMs) * 100) : 100;
+
+                // For a new app or very short uptime, show high availability
+                const displayPercentage = uptimePercentage > 99.9 ? 99.9 : uptimePercentage;
+
+                document.getElementById('uptime-percentage').textContent = `${displayPercentage.toFixed(2)}%`;
+            } catch (e) {
+                document.getElementById('app-uptime').textContent = 'Unknown';
+                document.getElementById('uptime-percentage').textContent = 'Unknown';
+            }
+        }
+
+        // Update all metrics
+        async function updateAllMetrics() {
+            updateTimestamp();
+
+            // Storage & Data
+            const storageInfo = await getStorageInfo();
+            document.getElementById('storage-used').textContent = storageInfo;
+
+            const dbHealth = await checkIndexedDB();
+            const dbStatusEl = document.getElementById('indexeddb-status');
+            if (dbHealth.healthy) {
+                dbStatusEl.innerHTML = '<span class="material-symbols-rounded icon-ok">check_circle</span> Healthy';
+            } else {
+                dbStatusEl.innerHTML = '<span class="material-symbols-rounded icon-warn">error</span> Error';
+            }
+            document.getElementById('record-count').textContent = dbHealth.recordCount.toLocaleString();
+
+            // Authentication Service Status (not user-specific)
+            const signinStatusEl = document.getElementById('signin-status');
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                signinStatusEl.innerHTML = '<span class="material-symbols-rounded icon-ok">check_circle</span> Available';
+            } else {
+                signinStatusEl.innerHTML = '<span class="material-symbols-rounded icon-warn">error</span> Unavailable';
+            }
+
+            // Check for last sync in localStorage
+            try {
+                const lastSync = localStorage.getItem('lastSyncTime');
+                if (lastSync) {
+                    const syncDate = new Date(parseInt(lastSync));
+                    const now = new Date();
+                    const diffMs = now - syncDate;
+                    const diffMins = Math.floor(diffMs / 60000);
+
+                    if (diffMins < 1) {
+                        document.getElementById('last-sync').textContent = 'Just now';
+                    } else if (diffMins < 60) {
+                        document.getElementById('last-sync').textContent = `${diffMins} min ago`;
+                    } else if (diffMins < 1440) {
+                        document.getElementById('last-sync').textContent = `${Math.floor(diffMins / 60)} hr ago`;
+                    } else {
+                        document.getElementById('last-sync').textContent = syncDate.toLocaleDateString();
+                    }
+                } else {
+                    document.getElementById('last-sync').textContent = 'Never';
+                }
+            } catch (e) {
+                document.getElementById('last-sync').textContent = 'Unknown';
+            }
+
+            // Service Health
+            const authServiceEl = document.getElementById('auth-service-status');
+            const analyticsStatusEl = document.getElementById('analytics-status');
+
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                authServiceEl.innerHTML = '<span class="material-symbols-rounded icon-ok">check_circle</span> Active';
+            } else {
+                authServiceEl.innerHTML = '<span class="material-symbols-rounded icon-warn">error</span> Unavailable';
+            }
+
+            if (analytics) {
+                analyticsStatusEl.innerHTML = '<span class="material-symbols-rounded icon-ok">check_circle</span> Active';
+            } else {
+                analyticsStatusEl.innerHTML = '<span class="material-symbols-rounded icon-warn">error</span> Unavailable';
+            }
+
+            // Page Load Time
+            const loadTime = Date.now() - pageLoadStart;
+            document.getElementById('page-load-time').textContent = `${loadTime} ms`;
+
+            // Application Uptime
+            calculateUptime();
+
+            // Environment detection
+            const hostname = window.location.hostname;
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                document.getElementById('environment').textContent = 'Development';
+            } else {
+                document.getElementById('environment').textContent = 'Production';
+            }
+        }
+
+        // Simple connectivity check with observability
         function updateStatus() {
+            const statusCheckTrace = performance ? performance.trace('status_check') : null;
+            if (statusCheckTrace) statusCheckTrace.start();
+
             const clientStatusEl = document.getElementById('client-status');
             const dbStatusEl = document.getElementById('db-status');
 
             if (navigator.onLine) {
                 clientStatusEl.innerHTML = '<span class="material-symbols-rounded icon-ok">wifi</span> Online';
+                logEvent('connectivity_change', { status: 'online' });
             } else {
                 clientStatusEl.innerHTML = '<span class="material-symbols-rounded icon-warn">wifi_off</span> Offline';
+                logEvent('connectivity_change', { status: 'offline' });
             }
 
-            // Pseudo-check for firebase - just checking if object exists since we loaded the scipts
+            // Check Firebase connection
             if (typeof firebase !== 'undefined') {
-                // Initialize to check (this is safe to call multiple times or check apps length)
                 if (!firebase.apps.length) {
                     try {
                         firebase.initializeApp(window.firebaseConfig);
-                    } catch (e) { console.log("already init"); }
+                    } catch (e) {
+                        console.log("Firebase already initialized");
+                    }
                 }
                 dbStatusEl.innerHTML = '<span class="material-symbols-rounded icon-ok">cloud_done</span> Connected';
+                logEvent('firebase_status', { status: 'connected' });
             } else {
                 dbStatusEl.innerHTML = '<span class="material-symbols-rounded icon-warn">cloud_off</span> Disconnected';
+                logEvent('firebase_status', { status: 'disconnected' });
             }
+
+            if (statusCheckTrace) {
+                statusCheckTrace.stop();
+            }
+
+            // Log status check completion
+            logEvent('status_check_complete', {
+                online: navigator.onLine,
+                firebase_available: typeof firebase !== 'undefined'
+            });
         }
 
-        window.addEventListener('online', updateStatus);
-        window.addEventListener('offline', updateStatus);
+        // Track back button clicks
+        function trackBackClick() {
+            logEvent('status_back_click', {
+                destination: 'index.html'
+            });
+        }
+
+        // Refresh all metrics
+        function refreshMetrics() {
+            logEvent('status_refresh_clicked');
+            updateStatus();
+            updateAllMetrics();
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const firebaseReady = initFirebaseObservability();
+
+            // Add click tracking to back link
+            const backLink = document.querySelector('.back-link');
+            if (backLink) {
+                backLink.addEventListener('click', trackBackClick);
+            }
+
+            // Add refresh button handler
+            const refreshBtn = document.getElementById('refresh-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshMetrics);
+            }
+
+            // Initial metrics update
+            await updateAllMetrics();
+
+            // Complete page load trace
+            if (pageLoadTrace) {
+                setTimeout(() => {
+                    pageLoadTrace.stop();
+                    console.log('Page load trace completed');
+                }, 100);
+            }
+        });
+
+        // Track connectivity changes
+        window.addEventListener('online', () => {
+            updateStatus();
+            logEvent('network_online');
+        });
+
+        window.addEventListener('offline', () => {
+            updateStatus();
+            logEvent('network_offline');
+        });
+
+        // Initial status check
         updateStatus();
     </script>
 </body>

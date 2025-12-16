@@ -9,57 +9,126 @@
 }
 
 .history-item {
-    padding: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    /* softer glass border */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.2s;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    transition: all 0.2s;
+    cursor: default;
+    gap: 12px;
 }
 
 .history-item:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.06);
 }
 
-.history-item:last-child {
-    border-bottom: none;
+.history-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-content>div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
 }
 
 .history-date {
-    font-weight: 500;
     font-size: 0.9rem;
+    color: var(--text-main);
+    font-weight: 500;
 }
 
 .history-drinks {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--text-muted);
     font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.history-notes {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+/* Action Buttons */
+.history-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.history-item:hover .history-actions {
+    opacity: 1;
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-main);
+}
+
+.icon-btn .material-symbols-rounded {
+    font-size: 18px;
+}
+
+.edit-btn:hover {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: rgba(96, 165, 250, 0.3);
+    color: #60a5fa;
+}
+
+.delete-btn:hover {
+    background: rgba(248, 113, 113, 0.15);
+    border-color: rgba(248, 113, 113, 0.3);
+    color: #f87171;
 }
 
 .pill {
-    padding: 4px 12px;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .pill.under {
-    background: rgba(129, 201, 149, 0.2);
-    color: #81c995;
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
 }
 
 .pill.equal {
-    background: rgba(253, 214, 99, 0.2);
-    color: #fdd663;
+    background: rgba(250, 204, 21, 0.15);
+    color: #facc15;
 }
 
 .pill.over {
-    background: rgba(242, 139, 130, 0.2);
-    color: #f28b82;
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
 }
